@@ -8,7 +8,10 @@ export async function POST(req: NextRequest) {
 
     const selectedPlan = plan === "yearly" ? "yearly" : "monthly";
     const planConfig = PLANS[selectedPlan];
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    // Use request origin so it works on both localhost and Vercel
+    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/[^/]*$/, "") || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = origin.replace(/\/$/, ""); // strip trailing slash
 
     // Create a Stripe Checkout session with one-time payment
     // (For recurring, you'd use mode: "subscription" with priceId from Stripe dashboard)
