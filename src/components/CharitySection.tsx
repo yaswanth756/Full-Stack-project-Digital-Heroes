@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Heart, Search } from "lucide-react";
 
@@ -33,6 +35,23 @@ const charities = [
 ];
 
 export default function CharitySection() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCharities = charities.filter((charity) =>
+    charity.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    charity.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/charities?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push("/charities");
+    }
+  };
+
   return (
     <section id="charities" className="py-28 relative overflow-hidden">
       {/* Subtle background blob */}
@@ -68,59 +87,73 @@ export default function CharitySection() {
           transition={{ duration: 0.6, delay: 0.1, ease }}
           className="max-w-md mx-auto mb-14"
         >
-          <div className="flex items-center gap-3 bg-white rounded-full px-5 py-3 border border-stone-200/60 glow">
-            <Search className="w-4 h-4 text-muted" />
+          <form 
+            onSubmit={handleSearch}
+            className="flex items-center gap-3 bg-white rounded-full px-5 py-3 border border-stone-200/60 glow"
+          >
+            <button type="submit" className="text-muted hover:text-coral transition-colors">
+              <Search className="w-4 h-4" />
+            </button>
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search charities…"
               className="flex-1 bg-transparent outline-none text-ink placeholder:text-stone-400 text-sm"
             />
-          </div>
+          </form>
         </motion.div>
 
         {/* Charity Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {charities.map((charity, idx) => (
-            <motion.div
-              key={charity.id}
-              initial={{ y: 40, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: idx * 0.1, ease }}
-              className="bg-white rounded-[2rem] p-7 border border-stone-100 hover:shadow-xl hover:border-transparent transition-all duration-300 cursor-pointer group"
-            >
-              {/* Category badge */}
-              <div
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-5 ${charity.color}`}
+          {filteredCharities.length > 0 ? (
+            filteredCharities.map((charity, idx) => (
+              <motion.div
+                key={charity.id}
+                onClick={() => router.push("/charities")}
+                initial={{ y: 40, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: idx * 0.1, ease }}
+                className="bg-white rounded-[2rem] p-7 border border-stone-100 hover:shadow-xl hover:border-transparent transition-all duration-300 cursor-pointer group"
               >
-                <Heart className="w-3 h-3" />
-                {charity.category}
-              </div>
+                {/* Category badge */}
+                <div
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-5 ${charity.color}`}
+                >
+                  <Heart className="w-3 h-3" />
+                  {charity.category}
+                </div>
 
-              <h3 className="text-xl font-medium text-ink tracking-tight mb-2 group-hover:text-coral transition-colors">
-                {charity.name}
-              </h3>
+                <h3 className="text-xl font-medium text-ink tracking-tight mb-2 group-hover:text-coral transition-colors">
+                  {charity.name}
+                </h3>
 
-              <div className="flex items-center justify-between mt-6 pt-5 border-t border-stone-100">
-                <div>
-                  <div className="text-xs text-muted uppercase tracking-wide">
-                    Raised
+                <div className="flex items-center justify-between mt-6 pt-5 border-t border-stone-100">
+                  <div>
+                    <div className="text-xs text-muted uppercase tracking-wide">
+                      Raised
+                    </div>
+                    <div className="text-lg font-medium text-ink">
+                      {charity.raised}
+                    </div>
                   </div>
-                  <div className="text-lg font-medium text-ink">
-                    {charity.raised}
+                  <div className="text-right">
+                    <div className="text-xs text-muted uppercase tracking-wide">
+                      Supporters
+                    </div>
+                    <div className="text-lg font-medium text-ink">
+                      {charity.supporters}
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-xs text-muted uppercase tracking-wide">
-                    Supporters
-                  </div>
-                  <div className="text-lg font-medium text-ink">
-                    {charity.supporters}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          ) : (
+            <div className="col-span-1 md:col-span-3 text-center text-muted py-8">
+              No charities found.
+            </div>
+          )}
         </div>
 
         {/* Spotlight */}
@@ -131,7 +164,10 @@ export default function CharitySection() {
           transition={{ duration: 0.8, delay: 0.3, ease }}
           className="text-center mt-12"
         >
-          <button className="text-coral font-medium hover:underline underline-offset-4 transition-all">
+          <button
+            onClick={() => router.push("/charities")}
+            className="text-coral font-medium hover:underline underline-offset-4 transition-all"
+          >
             View all charities →
           </button>
         </motion.div>
@@ -139,3 +175,4 @@ export default function CharitySection() {
     </section>
   );
 }
+

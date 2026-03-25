@@ -24,6 +24,11 @@ export default function CharitiesPage() {
 
   useEffect(() => {
     fetch("/api/charities").then(r => r.json()).then(d => setCharities(d.charities || [])).catch(() => {});
+    if (typeof window !== "undefined") {
+      const qs = new URLSearchParams(window.location.search);
+      const q = qs.get("search");
+      if (q) setSearch(q);
+    }
   }, []);
 
   const categories = ["All", ...Array.from(new Set(charities.map((c: any) => c.category)))];
